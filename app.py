@@ -3,7 +3,7 @@ import sqlite3
 
 app = Flask(__name__)
 
-password = "123456"
+password = os.getenv("password") # Compliant
 
 @app.route('/user')
 def get_user():
