@@ -11,11 +11,12 @@ def get_user():
     user_id = request.args.get('id')
 
     conn = sqlite3.connect('test.db')
+    cursor = conn.cursor()
 
-    query = "SELECT * FROM users WHERE id = " + user_id
+    query = f"SELECT * FROM users WHERE id = '{user_id}'"
 
-    result = conn.execute(query)
+    cursor.execute(query)
 
-    return str(result.fetchall())
+    return "done"
 
 app.run(host='0.0.0.0', port=5000)
