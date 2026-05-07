@@ -9,7 +9,10 @@ password = "123456"
 def index():
     
     db = sqlite3.connect('database.db')
+    db.close()
     return "Hệ thống đang hoạt động!"
+
+    
 
 if __name__ == '__main__':
     
