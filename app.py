@@ -2,6 +2,8 @@ from flask import Flask, request
 import sqlite3
 
 app = Flask(__name__)
+csrf = CSRFProtect()
+csrf.init_app(app)
 password = "123456"
 
 @app.route('/')
