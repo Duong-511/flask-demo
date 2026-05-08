@@ -11,16 +11,18 @@ def index():
     
     return "Hệ thống đang hoạt động!"
 
-@app.route('/user')
-def get_user():
+@app.route('/search')
+def search_user():
     user_id = request.args.get('id')
-
+    
     conn = sqlite3.connect('test.db')
-
-    query = "SELECT * FROM users WHERE id = ?"
-    result = conn.execute(query, (user_id,))
-
-    return str(result.fetchall())
+    cursor = conn.cursor()
+    query = "SELECT * FROM users WHERE id = " + user_id
+    
+    cursor.execute(query)
+    result = cursor.fetchall()
+    
+    return str(result)
 
 if __name__ == '__main__':
 
