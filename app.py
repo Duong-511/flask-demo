@@ -11,7 +11,7 @@ password = os.getenv("password")
 def index():
     
     db = sqlite3.connect('database.db')
-    
+    db.close()
     return "Hệ thống đang hoạt động!"
 
 if __name__ == '__main__':
