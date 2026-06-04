@@ -26,7 +26,3 @@ if __name__ == '__main__':
 
     app.run(host='0.0.0.0', port=5000)
 
-// ❌ Đoạn code lỗi SQL Injection (Gây nợ kỹ thuật/Bị SonarQube bắt)
-String query = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
-Statement stmt = conn.createStatement();
-ResultSet rs = stmt.executeQuery(query); // Chặn ở hàm này
