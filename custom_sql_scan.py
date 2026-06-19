@@ -7,11 +7,8 @@ issues = []
 class AdvancedSQLiScanner(ast.NodeVisitor):
     def __init__(self, file_path):
         self.file_path = file_path
-        # Danh sách các "Nguồn ô nhiễm" (Sources) - Nơi user nhập dữ liệu vào
         self.tainted_sources = ["request.args", "request.form", "request.json", "input", "params"]
-        # Danh sách các biến bị "nhiễm độc" trong quá trình chạy code
         self.tainted_variables = set()
-        # Các từ khóa SQL để nhận diện
         self.sql_keywords = ["SELECT", "INSERT", "UPDATE", "DELETE"]
 
     def _is_sql(self, text):
@@ -32,7 +29,6 @@ class AdvancedSQLiScanner(ast.NodeVisitor):
         })
 
     def _get_source_name(self, node):
-        """Hàm bổ trợ để chuyển đổi object AST thành chuỗi text của biến"""
         if isinstance(node, ast.Name):
             return node.id
         elif isinstance(node, ast.Attribute):
@@ -43,17 +39,11 @@ class AdvancedSQLiScanner(ast.NodeVisitor):
         return None
 
     def visit_Assign(self, node):
-        """BƯỚC 1: THEO VẾT BIẾN (Taint Tracking)
-        Nếu một biến được gán bằng dữ liệu từ 'Source' độc hại, 
-        hoặc gán bằng một biến đã bị nhiễm độc từ trước -> Đánh dấu nó bị nhiễm độc.
-        """
         source_str = self._get_source_name(node.value)
         
-        # Kiểm tra xem vế phải có phải là Source độc hại không (Ví dụ: request.args.get('id'))
         is_from_source = any(src in str(source_str) or (isinstance(node.value, ast.Call) and src in self._get_source_name(node.value.func)) 
                              for src in self.tainted_sources)
 
-        # Hoặc vế phải là một biến đã bị nhiễm độc từ trước
         is_from_tainted_var = source_str in self.tainted_variables
 
         if is_from_source or is_from_tainted_var:
@@ -65,9 +55,7 @@ class AdvancedSQLiScanner(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_BinOp(self, node):
-        """BƯỚC 2: PHÁT HIỆN ĐIỂM CHẾT (Sink)
-        Nếu phát hiện phép cộng chuỗi (+) mà một vế là SQL, vế còn lại là biến bị nhiễm độc.
-        """
+       
         if isinstance(node.op, ast.Add):
             left_val = getattr(node.left, 'value', None)
             right_val = getattr(node.right, 'value', None)
@@ -88,9 +76,7 @@ class AdvancedSQLiScanner(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_JoinedStr(self, node):
-        """BƯỚC 2.2: PHÁT HIỆN QUA F-STRING
-        Nếu f-string chứa SQL và biến truyền vào nằm trong danh sách nhiễm độc.
-        """
+        
         has_sql = any(isinstance(v, ast.Constant) and self._is_sql(v.value) for v in node.values)
         if has_sql:
             for v in node.values:
@@ -101,7 +87,7 @@ class AdvancedSQLiScanner(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-# --- Thực thi quét ---
+
 current_script = os.path.basename(__file__)
 for root, dirs, files in os.walk("."):
     for file in files:
